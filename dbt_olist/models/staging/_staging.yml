@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: stg_ordenes
+    columns:
+      - name: id_orden
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_clientes
+    columns:
+      - name: id_cliente
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_productos
+    columns:
+      - name: id_producto
+        tests:
+          - unique
+          - not_null

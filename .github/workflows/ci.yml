@@ -1,0 +1,52 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: olist
+          POSTGRES_PASSWORD: olist
+          POSTGRES_DB: olist
+        ports: ["5434:5432"]
+        options: >-
+          --health-cmd "pg_isready -U olist"
+          --health-interval 5s --health-timeout 5s --health-retries 5
+    env:
+      WAREHOUSE_DSN: postgresql://olist:olist@localhost:5434/olist
+      WAREHOUSE_HOST: localhost
+      WAREHOUSE_PORT: "5434"
+      WAREHOUSE_USER: olist
+      WAREHOUSE_PASSWORD: olist
+      WAREHOUSE_DB: olist
+      DBT_PROFILES_DIR: ${{ github.workspace }}/dbt_olist
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: pytest -v
+      - name: Carga el fixture de muestra versionado
+        run: python -m olist_loader.run sample
+      - name: dbt build (modelos + tests) sobre la muestra
+        working-directory: dbt_olist
+        run: |
+          dbt deps
+          dbt build
+      - name: Verifica que las serving marts no estén vacías
+        run: |
+          python - <<'PY'
+          import os
+          import psycopg
+          conn = psycopg.connect(os.environ["WAREHOUSE_DSN"])
+          with conn.cursor() as cur:
+              cur.execute("select count(*) from serving.mart_ordenes_enriquecidas")
+              n = cur.fetchone()[0]
+          print("filas de mart_ordenes_enriquecidas:", n)
+          assert n > 0, "serving.mart_ordenes_enriquecidas está vacía"
+          PY

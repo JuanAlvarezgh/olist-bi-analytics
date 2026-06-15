@@ -1,0 +1,18 @@
+services:
+  olist-postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: olist
+      POSTGRES_PASSWORD: olist
+      POSTGRES_DB: olist
+    ports:
+      - "5434:5432"
+    volumes:
+      - olist-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "olist"]
+      interval: 5s
+      retries: 5
+
+volumes:
+  olist-data:

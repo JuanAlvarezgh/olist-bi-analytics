@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: dim_clientes
+    columns:
+      - name: id_cliente
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_productos
+    columns:
+      - name: id_producto
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_vendedores
+    columns:
+      - name: id_vendedor
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_fecha
+    columns:
+      - name: dia
+        tests:
+          - unique
+          - not_null
+
+  - name: hechos_items_orden
+    columns:
+      - name: llave_item
+        tests:
+          - unique
+          - not_null
+      - name: id_producto
+        tests:
+          - relationships:
+              to: ref('dim_productos')
+              field: id_producto
+      - name: id_vendedor
+        tests:
+          - relationships:
+              to: ref('dim_vendedores')
+              field: id_vendedor
+      - name: id_orden
+        tests:
+          - relationships:
+              to: ref('hechos_ordenes')
+              field: id_orden
+
+  - name: hechos_ordenes
+    columns:
+      - name: id_orden
+        tests:
+          - unique
+          - not_null
+      - name: id_cliente
+        tests:
+          - relationships:
+              to: ref('dim_clientes')
+              field: id_cliente
+      - name: estado_orden
+        tests:
+          - accepted_values:
+              values:
+                - delivered
+                - shipped
+                - canceled
+                - unavailable
+                - invoiced
+                - processing
+                - created
+                - approved
+
+  - name: hechos_resenas
+    columns:
+      - name: id_resena
+        tests:
+          - unique
+          - not_null
+      - name: puntaje
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 5
+              config:
+                where: "puntaje is not null"
+      - name: id_orden
+        tests:
+          - relationships:
+              to: ref('hechos_ordenes')
+              field: id_orden

@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: mart_ordenes_enriquecidas
+    columns:
+      - name: id_orden
+        tests:
+          - not_null
+
+  - name: mart_ventas_diarias
+    columns:
+      - name: fecha_compra
+        tests:
+          - not_null
+
+  - name: mart_ventas_por_categoria
+    columns:
+      - name: categoria
+        tests:
+          - not_null

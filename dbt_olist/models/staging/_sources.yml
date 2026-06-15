@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: clientes
+      - name: ordenes
+      - name: items_orden
+      - name: productos
+      - name: vendedores
+      - name: pagos
+      - name: resenas
+      - name: traduccion_categorias
